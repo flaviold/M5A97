@@ -5,6 +5,7 @@ var port	= process.env.PORT || 8000,
 	express	= require('express'),
 	UUID	= require('node-uuid'),
 	http	= require('http'),
+	game_server = require('./server.js'),
 
 	app		= express(),
 	server	= http.createServer(app),
@@ -41,13 +42,13 @@ sio.configure(function () {
 
         client.emit('onconnected', { id: client.userid });
 
-        //game_server.findGame(client);
+        game_server.createGame(client);
 
         verbose && console.log('\t socket.io:: player ' + client.userid + ' connected');
 
         client.on('command', function (command) {
-            console.log('\t socket.io:: command from ' + client.userid + ': ' + command.start);
-            //game_server.onMessage(client, m);
+            //console.log('\t socket.io:: command from ' + client.userid + ': ' + command.start);
+            game_server.sendCommand(client, command);
         });
 
         client.on('disconnected', function () {

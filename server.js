@@ -1,14 +1,14 @@
-var server  = module.exports = {games: {}, game_count: 0 },
-    UUID    = require('node-uuid');
+var UUID    = require('node-uuid'),
+    Game    = require('./game.js'),
+    server  = module.exports = { games : {}, game_count:0 }
 
 server.createGame = function (player) {
-  var game = {
-    id: player.userid,
-  };
+  var game = new Game(player.userid);
 
   this.games[game.id] = game;
+  this.games_count++;
 }
 
-server.sendCommand = function (client) {
-
+server.sendCommand = function (player, command) {
+  this.games[player.userid].sendCommand(command);
 }
