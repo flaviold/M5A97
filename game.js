@@ -1,6 +1,12 @@
-var game = module.exports = function (id) {
-  this.id = id;
+var net = require('net');
+var game = module.exports = function (playerid, socketSufix) {
+  this.playerid = playerid;
+  this.socketPort = __dirname + "/mkjint" + socketSufix + ".sock";
 
+  console.log(this.socketPort);
+
+  this.domainServer = net.Socket();
+  this.domainServer.connect(this.socketPort);
   //Começar o jogo
 };
 
@@ -26,6 +32,8 @@ game.prototype.sendCommand = function (command) {
   } else {
   	message = "Pressed: " + messageArray.join(", ");
   }
+
+  this.domainServer.write(message);
 
   console.log(message);
 };
