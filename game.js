@@ -1,6 +1,17 @@
-var game = module.exports = function (id) {
-  this.id = id;
+var net = require('net');
+var game = module.exports = function (playerid, socketSufix) {
+  this.playerid = playerid;
+  this.socketName = "~/" + socketSufix + ".sock";
 
+  this.client = net.createConnection(function (socket) {
+    console.log('connected');
+
+    socket.on('data', function (data) {
+      console.log(data.toString());
+    });
+  });
+
+  client.listen(this.socketName);
   //Começar o jogo
 };
 
@@ -27,5 +38,6 @@ game.prototype.sendCommand = function (command) {
   	message = "Pressed: " + messageArray.join(", ");
   }
 
+  this.client.write(message);
   console.log(message);
 };
