@@ -58,7 +58,7 @@ game.mainloop = function () {
   game.commands.x       = keyboard.pressed('X');
   game.commands.y       = keyboard.pressed('Y');
 
-  //waitingResponse = true;
+  waitingResponse = true;
   socket.emit('command', game.commands);
 
   var time = new Date();

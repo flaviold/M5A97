@@ -29,8 +29,7 @@ game.prototype.sendCommand = function (player, command) {
   command.y && messageArray.push("Y");
 
   if (messageArray.length == 0) {
-  	//message = "No button Pressed";
-  	return;
+  	message = "No button Pressed";
   } else {
   	message = "Pressed: " + messageArray.join(", ");
   }
@@ -45,5 +44,5 @@ game.prototype.sendCommand = function (player, command) {
 
   //this.domainServer.write(message);
 
-  console.log(message);
+  //console.log(message);
 };
