@@ -1,7 +1,9 @@
 var game = {},
     socket = io.connect('/'),
     keyboard = new THREEx.KeyboardState(),
-    waitingResponse = false;
+    waitingResponse = false,
+    canvas,
+    ctx;
 
 socket.on('onconnected', function( data ) {
 	//Note that the data is the object we sent from the server, as is. So we can assume its id exists.
@@ -24,8 +26,23 @@ game.commands = {
   y: false
 };
 
+game.lastTime = new Date();
+game.realFps = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
-mainloop = function () {
+game.showFPS = function () {
+  var sum = 0,
+      avg;
+
+  for (var i = 0; i < game.realFps.length; i++) {
+    sum += game.realFps[i];
+  }
+
+  avg = sum/game.realFps.length;
+
+  ctx.fillText(avg.toPrecision(2), 0, 15);
+};
+
+game.mainloop = function () {
   if (waitingResponse) return;
 
   game.commands.start   = keyboard.pressed('enter');
@@ -43,8 +60,27 @@ mainloop = function () {
 
   //waitingResponse = true;
   socket.emit('command', game.commands);
+
+  var time = new Date();
+  game.realFps.push(1000/(time - game.lastTime));
+  game.realFps.shift();
+  game.lastTime = time;
 }
 
 window.onload = function () {
-  setInterval(mainloop, 1000/game.fps);
+  canvas = document.getElementById('viewport');
+  ctx = canvas.getContext('2d');
+  ctx.fillStyle = "blue";
+  ctx.font = "bold 16px Arial";
+
+  setInterval(game.mainloop, 1000/game.fps);
+
+  socket.on('response', function( data ) {
+  var img = new Image();
+  img.src = 'data:image/png;base64,' + data;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  game.showFPS();
+  ctx.drawImage(img, 0, 0);
+  waitingResponse = false;
+});
 }

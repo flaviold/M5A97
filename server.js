@@ -9,7 +9,6 @@ server.createGame = function (player) {
 }
 
 server.sendCommand = function (player, command) {
-  console.log("Debug: " + this.game_count + " " + this.games[player.userid]);
-  this.games[player.userid].sendCommand(command);
+  this.games[player.userid].sendCommand(player, command);
 }
 

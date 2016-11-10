@@ -1,16 +1,18 @@
 var net = require('net');
+var fs = require('fs');
 var game = module.exports = function (playerid, socketSufix) {
   this.playerid = playerid;
-  this.socketPort = __dirname + "/mkjint" + socketSufix + ".sock";
+  this.imageCount = 0;
+  //this.socketPort = __dirname + "/mkjint" + socketSufix + ".sock";
 
-  console.log(this.socketPort);
+  //console.log(this.socketPort);
 
-  this.domainServer = net.Socket();
-  this.domainServer.connect(this.socketPort);
+  //this.domainServer = net.Socket();
+  //this.domainServer.connect(this.socketPort);
   //Começar o jogo
 };
 
-game.prototype.sendCommand = function (command) {
+game.prototype.sendCommand = function (player, command) {
   var messageArray = [],
   	  message;
   command.start && messageArray.push("Start");
@@ -33,7 +35,15 @@ game.prototype.sendCommand = function (command) {
   	message = "Pressed: " + messageArray.join(", ");
   }
 
-  this.domainServer.write(message);
+  fs.readFile(__dirname + '/files/volt_sprite_sheet-' + (this.imageCount++ % 10) + '.png', function(err, buf){
+    if (err) console.log('ERRO: ' + err.message);
+
+    player.emit('response', buf.toString('base64'));
+  });
+
+  //player.emit('response', message);
+
+  //this.domainServer.write(message);
 
   console.log(message);
 };
