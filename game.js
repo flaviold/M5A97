@@ -3,12 +3,16 @@ var fs = require('fs');
 var game = module.exports = function (playerid, socketSufix) {
   this.playerid = playerid;
   this.imageCount = 0;
-  //this.socketPort = __dirname + "/mkjint" + socketSufix + ".sock";
+  this.socketPort = 9001;
 
   //console.log(this.socketPort);
 
-  //this.domainServer = net.Socket();
-  //this.domainServer.connect(this.socketPort);
+  this.domainServer = net.Socket();
+  this.domainServer.connect(this.socketPort);
+
+  this.domainServer.on('message', function(m) {
+    console.log('data: ' + m);
+  });
   //Começar o jogo
 };
 
@@ -42,7 +46,7 @@ game.prototype.sendCommand = function (player, command) {
 
   //player.emit('response', message);
 
-  //this.domainServer.write(message);
+  this.domainServer.write(message);
 
   //console.log(message);
 };
