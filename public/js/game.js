@@ -1,14 +1,6 @@
 var game = {},
-    socket = io.connect('/'),
-    keyboard = new THREEx.KeyboardState(),
-    waitingResponse = false,
-    canvas,
-    ctx;
-
-socket.on('onconnected', function( data ) {
-	//Note that the data is the object we sent from the server, as is. So we can assume its id exists.
-  console.log( 'Connected successfully to the socket.io server. My server side ID is ' + data.id );
-});
+	  keyboard = new THREEx.KeyboardState(),
+	  waitingResponse = false;
 
 game.fps = 60; //send commands fps
 game.commands = {
@@ -29,7 +21,7 @@ game.commands = {
 game.lastTime = new Date();
 game.realFps = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
-game.showFPS = function () {
+game.showFPS = function (ctx) {
   var sum = 0,
       avg;
 
@@ -40,6 +32,23 @@ game.showFPS = function () {
   avg = sum/game.realFps.length;
 
   ctx.fillText(avg.toPrecision(2), 0, 15);
+};
+
+game.drawScreen = function (ctx, array) {
+  var height = 224,
+      width = 256;
+      imageData = ctx.getImageData(0, 0, height, width),
+      data = imageData.data;
+      dataOffset = 0;
+  for (var i = 0; i < data.length; i += 3) {
+    data[i + dataOffset]     = array[i] % 256;
+    data[i + dataOffset+ 1]  = array[i + 1] % 256;
+    data[i + dataOffset+ 2]  = array[i + 2] % 256;
+    data[i + dataOffset+ 3]  = 255;
+    dataOffset++;
+  }
+
+  ctx.putImageData(imageData, 0, 0);
 };
 
 game.mainloop = function () {
@@ -59,28 +68,11 @@ game.mainloop = function () {
   game.commands.y       = keyboard.pressed('Y');
 
   waitingResponse = true;
-  socket.emit('command', game.commands);
+  socket.emit('message', game.commands);
+  //gameSocket.emit("data", "game.commands");
 
   var time = new Date();
   game.realFps.push(1000/(time - game.lastTime));
   game.realFps.shift();
   game.lastTime = time;
-}
-
-window.onload = function () {
-  canvas = document.getElementById('viewport');
-  ctx = canvas.getContext('2d');
-  ctx.fillStyle = "blue";
-  ctx.font = "bold 16px Arial";
-
-  setInterval(game.mainloop, 1000/game.fps);
-
-  socket.on('response', function( data ) {
-  var img = new Image();
-  img.src = 'data:image/png;base64,' + data;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  game.showFPS();
-  ctx.drawImage(img, 0, 0);
-  waitingResponse = false;
-});
-}
+};
