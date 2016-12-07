@@ -17,6 +17,7 @@ connectSockets = function () {
 		gameSocket.write(data.toString())
 	});
 
+	clientSocket.emit('start');
 	console.log('the sockets are connected');
 }
 

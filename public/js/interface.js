@@ -10,35 +10,19 @@ socket.on('connect', function () {
 window.onload = function () {
 	canvas = document.getElementById('viewport');
 	ctx = canvas.getContext('2d');
-	ctx.fillStyle = "blue";
+	ctx.fillStyle = "white";
 	ctx.font = "bold 16px Arial";
 
 	setInterval(game.mainloop, 1000/game.fps);
-
+	socket.on('start', function () {
+		console.log('start');
+		waitingResponse = false;
+	});
 	socket.on('message', function (data) {
-		chunk += data;
-		if (data.indexOf(']') >= 0) {
-			try {
-				var JSONdata = JSON.parse(chunk);
-				game.drawScreen(ctx, JSONdata);
-				game.showFPS(ctx);
-				waitingResponse = false;
-			} catch (err) {
-				console.log(err);
-			}
-			//console.log(JSON.parse(chunk));
-
-			//ctx.clearRect(0, 0, canvas.width, canvas.height);
-			// game.drawScreen(ctx, );
-			// game.showFPS(ctx);
-			// waitingResponse = false;
-			chunk = "";
-		}
 		// console.log(data);
 		// //console.log(JSON.parse(data));
 		// ctx.clearRect(0, 0, canvas.width, canvas.height);
-		// //game.drawScreen(ctx);
-		// game.showFPS(ctx);
-		// waitingResponse = false;
+		game.drawScreen(ctx, data);
+		waitingResponse = false;
 	});
 }

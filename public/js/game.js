@@ -30,25 +30,18 @@ game.showFPS = function (ctx) {
   }
 
   avg = sum/game.realFps.length;
-
+  console.log("fps: " + avg.toPrecision(2));
+  ctx.fillStyle = "#FF0000";
   ctx.fillText(avg.toPrecision(2), 0, 15);
 };
 
-game.drawScreen = function (ctx, array) {
-  var height = 224,
-      width = 256;
-      imageData = ctx.getImageData(0, 0, height, width),
-      data = imageData.data;
-      dataOffset = 0;
-  for (var i = 0; i < data.length; i += 3) {
-    data[i + dataOffset]     = array[i] % 256;
-    data[i + dataOffset+ 1]  = array[i + 1] % 256;
-    data[i + dataOffset+ 2]  = array[i + 2] % 256;
-    data[i + dataOffset+ 3]  = 255;
-    dataOffset++;
-  }
-
-  ctx.putImageData(imageData, 0, 0);
+game.drawScreen = function (ctx, baseStr) {
+  var image = new Image();
+  image.onload = function() {
+      ctx.drawImage(image, 0, 0);
+      game.showFPS(ctx);
+  };
+  image.src = "data:image/png;base64," + baseStr;
 };
 
 game.mainloop = function () {
@@ -67,8 +60,9 @@ game.mainloop = function () {
   game.commands.x       = keyboard.pressed('X');
   game.commands.y       = keyboard.pressed('Y');
 
+
   waitingResponse = true;
-  socket.emit('message', game.commands);
+  socket.emit('message', keyboard.pressed('enter') + ";" + keyboard.pressed('esc') + ";" + keyboard.pressed('up') + ";" + keyboard.pressed('down') + ";" + keyboard.pressed('left') + ";" + keyboard.pressed('right') + ";" + keyboard.pressed('A') + ";" + keyboard.pressed('B') + ";" + keyboard.pressed('X') + ";" + keyboard.pressed('Y'));
   //gameSocket.emit("data", "game.commands");
 
   var time = new Date();
