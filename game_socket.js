@@ -42,7 +42,7 @@ ioServer.on('connection', function (socket) {
 		console.log('game process PID after kill: ' + gameProcess.pid);
 	});
 	
-	gameProcess = spawn('./emulador/snes9x' ,[gamePort, 'emulador/Street-Fighter-II-The-World-Warrior-USA.sfc']);
+	gameProcess = spawn('./emulator/snes9x' ,[gamePort, 'emulator/Street-Fighter-II-The-World-Warrior-USA.sfc']);
 	console.log('game process PID: ' + gameProcess.pid);
 
 	if (gameSocket){
