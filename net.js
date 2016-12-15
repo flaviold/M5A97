@@ -1,1 +1,0 @@
-net = require('net-browserify');

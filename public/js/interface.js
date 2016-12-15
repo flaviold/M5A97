@@ -1,7 +1,10 @@
 var hostname = window.location.hostname,
 	socket = io.connect('http://' + hostname + ':' + port),
-	chunk = "",
+	settings,
+	GUI,
+	game,
 	ctx,
+	loop,
 	width = 512,
 	height = 448;
 
@@ -9,7 +12,12 @@ socket.on('connect', function () {
 	console.log('logged');
 });
 
+loop = function () {
+	game.mainloop();
+}
+
 window.onload = function () {
+	//Setting up canvas and context
 	canvas = document.getElementById('viewport');
 	canvas.width = width;
 	canvas.height = height;
@@ -17,18 +25,25 @@ window.onload = function () {
 	ctx.fillStyle = "white";
 	ctx.font = "bold 16px Arial";
 
-	setInterval(game.mainloop, 1000/game.fps);
+	//game settings and dat.GUI lib config
+	settings = new Settings()
+	GUI = new dat.GUI();
+	settings.configureGUI(GUI);
+	game = new Game(settings);
+
+	//Main Loop
+	game.mainloop();
+
+	//setInterval(game.mainloop, 1000/game.fps);
 	socket.on('start', function () {
-		console.log('start');
-		waitingResponse = false;
+		//enabling game to send command
+		game.waitingResponse = false;
 	});
 	socket.on('message', function (data) {
-		// var dataBase64 = data.toString('base64');
-		// console.log(data);
-		// console.log(dataBase64);
-		// //console.log(JSON.parse(data));
-		// ctx.clearRect(0, 0, canvas.width, canvas.height);
+		//drawing screen
 		game.drawScreen(ctx, data);
-		waitingResponse = false;
+
+		//enabling game to send another command
+		game.waitingResponse = false;
 	});
 }

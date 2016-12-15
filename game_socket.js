@@ -1,6 +1,7 @@
 var clientPort 		= parseInt(process.argv[2]),
-	gamePort 		= clientPort + 1,
+	gamePort 		= "/tmp/snes-socket-" + clientPort + ".socket",
 	net 			= require('net'),
+	fs 				= require('fs'),
 	ioServer 		= require('socket.io')(clientPort),
 	btoa 			= require('btoa'),
 	spawn 			= require('child_process').spawn,
@@ -8,7 +9,14 @@ var clientPort 		= parseInt(process.argv[2]),
 	gameSocket,
 	gameServer,
 	gameProcess,
-	connectSockets;
+	connectSockets,
+	changedStateKeys,
+	keysLastState;
+
+// changedStateKeys = function (keys) {
+// 	keys = keys.substring(1, keys.lenght - 1);
+// 	keyArray = keys.split(';');
+// }
 
 connectSockets = function () {
 	gameSocket.on('data', function (data) {
@@ -16,38 +24,51 @@ connectSockets = function () {
 	});
 
 	clientSocket.on('message', function(data) {
-		gameSocket.write(data.toString())
+		// gameSocket.write(data.toString());
+		gameSocket.write('0');
 	});
 
 	clientSocket.emit('start');
 	console.log('the sockets are connected');
 }
 
-gameServer = net.createServer(function (socket) {
-	console.log('game connected');
-	gameSocket = socket;
+// gameServer = net.createServer(function (socket) {
+// 	console.log('game connected');
+// 	gameSocket = socket;
 	
-	if (clientSocket){
-		connectSockets();
-	}
-});
+// 	if (clientSocket){
+// 		connectSockets();
+// 	}
+// });
 
 ioServer.on('connection', function (socket) {
 	console.log('client connected');
 	clientSocket = socket;
 	clientSocket.on('disconnect', function () {
 		console.log('client disconnected! turning off the game')
-		gameProcess.kill('SIGHUP');
+		//gameProcess.kill('SIGHUP');
 		process.exit();
-		console.log('game process PID after kill: ' + gameProcess.pid);
 	});
 	
-	gameProcess = spawn('./emulator/snes9x' ,[gamePort, 'emulator/Street-Fighter-II-The-World-Warrior-USA.sfc']);
-	console.log('game process PID: ' + gameProcess.pid);
+	//gameProcess = spawn('./emulator/snes9x' ,[clientPort, 'emulator/Street-Fighter-II-The-World-Warrior-USA.sfc']);
 
 	if (gameSocket){
 		connectSockets();
 	}
 });
 
-gameServer.listen(gamePort);
+fs.unlink(gamePort, function () {
+	gameServer = net.createServer(function (socket) {
+		console.log('game connected');
+		gameSocket = socket;
+
+		if (clientSocket){
+			connectSockets();
+		}
+	});
+	gameServer.listen(gamePort, function() {
+		console.log('server bound on %s', gamePort);
+	});
+});
+
+// gameServer.listen(9001);

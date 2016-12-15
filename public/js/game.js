@@ -1,71 +1,82 @@
-var game = {},
-	  keyboard = new THREEx.KeyboardState(),
-	  waitingResponse = false;
+var Game = function (settings) {
+	this.keyboard = new THREEx.KeyboardState();
+	this.settings = settings;
+	this.waitingResponse = false;
 
-game.fps = 60; //send commands fps
-game.commands = {
-  start: false,
-  select: false,
+	this.lastLoop = 0;
 
-  up: false,
-  down: false,
-  left: false,
-  right: false,
+	this.commands = {
+		start: false,
+		select: false,
 
-  a: false,
-  b: false,
-  x: false,
-  y: false
-};
+		up: false,
+		down: false,
+		left: false,
+		right: false,
 
-game.lastTime = new Date();
-game.realFps = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+		a: false,
+		b: false,
+		x: false,
+		y: false
+	};
 
-game.showFPS = function (ctx) {
-  var sum = 0,
-      avg;
+	this.realFps = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
-  for (var i = 0; i < game.realFps.length; i++) {
-    sum += game.realFps[i];
-  }
+	this.showFPS = function (ctx) {
+		var sum = 0,
+		avg;
 
-  avg = sum/game.realFps.length;
-  ctx.fillStyle = "#FF0000";
-  ctx.fillText(avg.toPrecision(2), 0, 15);
-};
+		for (var i = 0; i < this.realFps.length; i++) {
+			sum += this.realFps[i];
+		}
 
-game.drawScreen = function (ctx, baseStr) {
-  var image = new Image();
-  image.src = "data:image/png;base64," + baseStr;
-  image.width = width;
-  image.height = height;
-  ctx.drawImage(image, 0, 0);
-  game.showFPS(ctx);
-};
+		avg = sum/this.realFps.length;
+		ctx.fillStyle = "#FF0000";
+		ctx.fillText(avg.toPrecision(2), 0, 15);
+	};
 
-game.mainloop = function () {
-  if (waitingResponse) return;
+	this.drawScreen = function (ctx, baseStr) {
+		var image = new Image();
+		image.src = "data:image/png;base64," + baseStr;
+		ctx.drawImage(image, 0, 0, width, height);
+		this.showFPS(ctx);
+	};
 
-  var message = "[";
-  message += 'Start:' + ((keyboard.pressed('enter')) ? 1 : 0) + ';';
-  message += 'Select:' + ((keyboard.pressed('esc')) ? 1 : 0) + ';';
-  message += 'Up:' + ((keyboard.pressed('up')) ? 1 : 0) + ';';
-  message += 'Down:' + ((keyboard.pressed('down')) ? 1 : 0) + ';';
-  message += 'Left:' + ((keyboard.pressed('left')) ? 1 : 0) + ';';
-  message += 'Right:' + ((keyboard.pressed('right')) ? 1 : 0) + ';';
-  message += 'A:' + ((keyboard.pressed('A')) ? 1 : 0) + ';';
-  message += 'B:' + ((keyboard.pressed('B')) ? 1 : 0) + ';';
-  message += 'X:' + ((keyboard.pressed('X')) ? 1 : 0) + ';';
-  message += 'Y:' + ((keyboard.pressed('Y')) ? 1 : 0) + ']';
+	this.mainloop = function () {
+		//FPS sync
+		if (this.waitingResponse) {
+			loop();
+			return;
+		}
+		// this.realFps.push(1000/(timestamp - this.lastLoop));
+		// this.realFps.shift();
+		// this.lastLoop = timestamp;
 
-  console.log(message);
+		var message = "[";
+		message += 'Start:' + ((this.keyboard.pressed(settings.Start)) ? 1 : 0) + ';';
+		message += 'Select:' + ((this.keyboard.pressed(settings.Select)) ? 1 : 0) + ';';
+		message += 'Up:' + ((this.keyboard.pressed(settings.Up)) ? 1 : 0) + ';';
+		message += 'Down:' + ((this.keyboard.pressed(settings.Down)) ? 1 : 0) + ';';
+		message += 'Left:' + ((this.keyboard.pressed(settings.Left)) ? 1 : 0) + ';';
+		message += 'Right:' + ((this.keyboard.pressed(settings.Right)) ? 1 : 0) + ';';
+		message += 'A:' + ((this.keyboard.pressed(settings.A)) ? 1 : 0) + ';';
+		message += 'B:' + ((this.keyboard.pressed(settings.B)) ? 1 : 0) + ';';
+		message += 'X:' + ((this.keyboard.pressed(settings.X)) ? 1 : 0) + ';';
+		message += 'Y:' + ((this.keyboard.pressed(settings.Y)) ? 1 : 0) + ']';
 
-  waitingResponse = true;
+		console.log(message);
 
-  socket.emit('message', message);
+		waitingResponse = true;
 
-  var time = new Date();
-  game.realFps.push(1000/(time - game.lastTime));
-  game.realFps.shift();
-  game.lastTime = time;
-};
+		socket.emit('message', message);
+
+		//continue looping
+		var time = new Date();
+		this.realFps.push(1000/(time - this.lastLoop));
+		this.realFps.shift();
+		this.lastLoop = time;
+
+		setTimeout(loop, 1000/settings.MaxFPS);
+		//requestAnimationFrame(loop);
+	};
+}

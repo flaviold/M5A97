@@ -42,7 +42,11 @@ var new_game =  function (ip, games, port_list) {
 	});
 
 	games[ip].process.stdout.on('data', function (data) {
-  		console.log(ip + " :: " + data);
+  		console.log(ip + ":" + port_available + " :: " + data);
+	});
+
+	games[ip].process.stdout.on('error', function (data) {
+  		console.log(ip + ":" + port_available + " :: ERROR :: " + data);
 	});
 }
 
