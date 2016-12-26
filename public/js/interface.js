@@ -41,6 +41,7 @@ window.onload = function () {
 	});
 	socket.on('message', function (data) {
 		//drawing screen
+		console.log(data.length);
 		game.drawScreen(ctx, data);
 
 		//enabling game to send another command

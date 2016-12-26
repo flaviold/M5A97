@@ -64,7 +64,7 @@ var Game = function (settings) {
 		message += 'X:' + ((this.keyboard.pressed(settings.X)) ? 1 : 0) + ';';
 		message += 'Y:' + ((this.keyboard.pressed(settings.Y)) ? 1 : 0) + ']';
 
-		console.log(message);
+		//console.log(message);
 
 		waitingResponse = true;
 

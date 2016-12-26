@@ -27,7 +27,7 @@ var new_game =  function (ip, games, port_list) {
 
 	games[ip] = {
 		port: port_available, 
-		process: spawn('node' ,['game_socket.js', '9000'])
+		process: spawn('node' ,['game_socket.js', port_available])
 	}
 
 	games[ip].process.on('close', function (code) {
