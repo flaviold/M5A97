@@ -1,34 +1,46 @@
 var clientPort 		= parseInt(process.argv[2]),
 	gamePort 		= "/tmp/snes-socket-" + clientPort + ".socket",
 	net 			= require('net'),
+	mysql			= require('mysql'),
 	fs 				= require('fs'),
 	ioServer 		= require('socket.io')(clientPort),
 	btoa 			= require('btoa'),
 	spawn 			= require('child_process').spawn,
-	chunk			= "",
 	clientSocket, 
 	gameSocket,
 	gameServer,
 	gameProcess,
 	connectSockets,
+	connection,
+	currentCommand = "",
+	query,
+
 
 connectSockets = function () {
 	gameSocket.on('data', function (data) {
-		var dataStr = data.toString();
-		chunk += dataStr;
-		if (chunk.indexOf('|') < 0) {
+		if (currentCommand == "") {
+			clientSocket.write(data.toString());
 			return;
 		}
+		query = "INSERT INTO AI_INFO (COMMAND_STRING, SCREEN_IMAGE_BASE64) VALUES (\"" + currentCommand + "\", \"" + data.toString() + "\");";
+		try {
+			// connection.connect();
 
-		dataArr = chunk.split('|');
-		for (var i = 0; i < dataArr.length - 1; i++) {
-			clientSocket.emit('message', dataArr[i]);
+			connection.query(query, function(err, rows, fields) {
+			  if (err) console.log(err);
+			 
+			  currentCommand = "";
+			});
+
+			currentCommand = "";
+		} catch (e) {
+			console.log("teste\n" + e)
 		}
-
-		chunk = dataArr[dataArr.length - 1];
+		clientSocket.write(data.toString());
 	});
 
 	clientSocket.on('message', function(data) {
+		if (currentCommand == "") currentCommand = data;
 		gameSocket.write(data.toString());
 	});
 
@@ -36,14 +48,14 @@ connectSockets = function () {
 	console.log('the sockets are connected');
 }
 
-// gameServer = net.createServer(function (socket) {
-// 	console.log('game connected');
-// 	gameSocket = socket;
-	
-// 	if (clientSocket){
-// 		connectSockets();
-// 	}
-// });
+connection = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'snes',
+  password : '123456',
+  database : 'SnesDB'
+});
+
+connection.connect();
 
 fs.unlink(gamePort, function () {
 	gameServer = net.createServer(function (socket) {
@@ -63,16 +75,14 @@ ioServer.on('connection', function (socket) {
 	console.log('client connected');
 	clientSocket = socket;
 	clientSocket.on('disconnect', function () {
-		console.log('client disconnected! turning off the game')
-		gameProcess.kill('SIGHUP');
+		connection.end();
+		//gameProcess.kill('SIGHUP');
 		process.exit();
 	});
 	
-	gameProcess = spawn('./emulator/snes9x' ,[clientPort, 'emulator/Street-Fighter-II-The-World-Warrior-USA.sfc']);
+	//gameProcess = spawn('./emulator/snes9x' ,[gamePort, 'emulator/Street-Fighter-II-The-World-Warrior-USA.sfc']);
 
 	if (gameSocket){
 		connectSockets();
 	}
 });
-
-// gameServer.listen(9001);

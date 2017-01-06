@@ -43,9 +43,12 @@ var Game = function (settings) {
 	};
 
 	this.mainloop = function () {
+		var self = this;
 		//FPS sync
 		if (this.waitingResponse) {
-			loop();
+			setTimeout(function() {
+				self.mainloop();
+			}, 1000/settings.MaxFPS);
 			return;
 		}
 		// this.realFps.push(1000/(timestamp - this.lastLoop));
@@ -76,7 +79,9 @@ var Game = function (settings) {
 		this.realFps.shift();
 		this.lastLoop = time;
 
-		setTimeout(loop, 1000/settings.MaxFPS);
+		setTimeout(function() {
+			self.mainloop();
+		}, 1000/settings.MaxFPS);
 		//requestAnimationFrame(loop);
 	};
 }

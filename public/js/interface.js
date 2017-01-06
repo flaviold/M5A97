@@ -12,9 +12,9 @@ socket.on('connect', function () {
 	console.log('logged');
 });
 
-loop = function () {
-	game.mainloop();
-}
+// loop = function () {
+// 	game.mainloop();
+// }
 
 window.onload = function () {
 	//Setting up canvas and context
@@ -31,17 +31,15 @@ window.onload = function () {
 	settings.configureGUI(GUI);
 	game = new Game(settings);
 
-	//Main Loop
-	game.mainloop();
+	
 
 	//setInterval(game.mainloop, 1000/game.fps);
 	socket.on('start', function () {
 		//enabling game to send command
-		game.waitingResponse = false;
+		game.mainloop();
 	});
 	socket.on('message', function (data) {
 		//drawing screen
-		console.log(data.length);
 		game.drawScreen(ctx, data);
 
 		//enabling game to send another command
