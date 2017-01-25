@@ -12,14 +12,42 @@ var clientPort 		= parseInt(process.argv[2]),
 	gameProcess,
 	connectSockets,
 	connection,
+	splitGameMessage,
 	currentCommand = "",
+	chunk = "",
 	query,
+	connectSockets,
 
+splitGameMessage = function (dataList) {
+	//console.log(dataList);
+	var returnList = [];
+	if (dataList.length == 0) {return returnList}
+	if (dataList.length == 1) {
+		chunk += dataList[0];
+		return returnList;
+	}
+	
+	returnList.push(chunk + dataList[0]);
+
+	for (var i = 1; i < dataList.length - 1; i++) {
+		returnList.push(dataList[i]);
+	}
+
+	chunk += dataList[dataList.length - 1]
+	return returnList;
+}
 
 connectSockets = function () {
 	gameSocket.on('data', function (data) {
+		var dataStr = data.toString().split('|')[0];
+		var dataParts = splitGameMessage(dataStr.split('|'));
+
+		// for (var i = 0; i < dataParts.length; i++) {
+		// 	clientSocket.write(dataParts[i]);
+		// }
+
 		if (currentCommand == "") {
-			clientSocket.write(data.toString());
+			clientSocket.write(dataStr);
 			return;
 		}
 		query = "INSERT INTO AI_INFO (COMMAND_STRING, SCREEN_IMAGE_BASE64) VALUES (\"" + currentCommand + "\", \"" + data.toString() + "\");";
@@ -36,7 +64,7 @@ connectSockets = function () {
 		} catch (e) {
 			console.log("teste\n" + e)
 		}
-		clientSocket.write(data.toString());
+		clientSocket.write(dataStr);
 	});
 
 	clientSocket.on('message', function(data) {
@@ -80,9 +108,22 @@ ioServer.on('connection', function (socket) {
 		process.exit();
 	});
 	
-	//gameProcess = spawn('./emulator/snes9x' ,[gamePort, 'emulator/Street-Fighter-II-The-World-Warrior-USA.sfc']);
-
+	// gameProcess = spawn('./emulator/snes9x' ,[gamePort, 'emulator/Street-Fighter-II-The-World-Warrior-USA.sfc']);
+	// gameProcess.stdout.on('data', function (data) {
+ //  		console.log(ip + ":" + port_available + " :: Emulator :: " + data);
+	// });
 	if (gameSocket){
 		connectSockets();
 	}
 });
+
+//==========================================================
+
+Array.prototype.clean = function(deleteValue) {
+	for (var i = this.length - 1; i >= 0; i--) {
+		if (this[i] == deleteValue) {         
+			this.splice(i, 1);
+		}
+	}
+	return this;
+};
