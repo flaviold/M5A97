@@ -2,6 +2,7 @@ var Game = function (settings) {
 	this.keyboard = new THREEx.KeyboardState();
 	this.settings = settings;
 	this.waitingResponse = false;
+	this.isExperimentOn = false;
 
 	this.lastLoop = 0;
 
@@ -44,16 +45,7 @@ var Game = function (settings) {
 
 	this.mainloop = function () {
 		var self = this;
-		//FPS sync
-		if (this.waitingResponse) {
-			setTimeout(function() {
-				self.mainloop();
-			}, 1000/settings.MaxFPS);
-			return;
-		}
-		// this.realFps.push(1000/(timestamp - this.lastLoop));
-		// this.realFps.shift();
-		// this.lastLoop = timestamp;
+		if (!this.isExperimentOn) {return;}
 
 		var message = "[";
 		message += 'Start:' + ((this.keyboard.pressed(settings.Start)) ? 1 : 0) + ';';
@@ -69,19 +61,21 @@ var Game = function (settings) {
 
 		//console.log(message);
 
-		waitingResponse = true;
-
-		socket.emit('message', message);
+		socket.emit('command', message);
 
 		//continue looping
+		var tbl = 1000/settings.MaxFPS;
 		var time = new Date();
+		var delta = (time - lastLoop).getMilisseconds();
+		var waitTime = (tbl - delta > 0) ? (tbl - delta) : 0;
+
 		this.realFps.push(1000/(time - this.lastLoop));
 		this.realFps.shift();
 		this.lastLoop = time;
 
 		setTimeout(function() {
 			self.mainloop();
-		}, 1000/settings.MaxFPS);
+		}, waitTime);
 		//requestAnimationFrame(loop);
 	};
 }

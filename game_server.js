@@ -1,38 +1,33 @@
-var port		= process.env.PORT || 8000,
-	express		= require('express'),
-	path		= require('path'),
-	new_game	= require('./new_game'),
-	port_list	= require('./port_list'),
-	app			= express(),
+var express = require('express');
+var app 	= express();
+var server 	= require('http').Server(app);
+var path	= require('path');
+var io 		= require('socket.io')(server);
+var uid		= require('uid');
+var port	= process.env.PORT || 8000;
 
-	games = {};
+var GameInstance = require('./game_instance');
+var games = {};
 
-//view setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', function (req, res) {
-	var ip = req.connection.remoteAddress.split(':')[3];
-	var port;
-	var return_message;
+	var id = uid(10);
 
-	new_game(ip, games, port_list);
-
-	if (games[ip]) {
-		port = games[ip].port;
-	} else {
-		port = -1;
-		message = "Servidores cheios";
-	}
+	new GameInstance(id, io);
 
 	res.render('index', {
-		title: 'Jogo para IP: ' + ip,
-		port: port,
-		message: return_message
+		id: id,
+		port: port
 	});
 	res.end();
 });
 
-app.listen(port);
+module.exports.listen = function (callback) {
+	server.listen(port, function () {
+		callback(port);
+	});
+};
