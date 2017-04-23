@@ -7,16 +7,21 @@ var instance = function (id, io) {
 	this.chunk = "";
 	self = this;
 
+	this.reconnectUser
+
 	this.disconnectGame = function () {
 		if (self.gameProcess) {
 			fs.unlink(self.gameSocketAddress);
 			self.gameProcess.kill('SIGHUP');
 			delete self.gameProcess;
+			delete self.gameSocket;
 		}
 	}
 
 	this.startExperiment = function () {
-		fs.unlink(this.gameSocketAddress, function () {
+		if (self.gameSocket) { return; }
+
+		fs.unlink(self.gameSocketAddress, function () {
 			var gameServer = net.createServer(function (socket) {
 				self.gameSocket = socket;
 
@@ -38,10 +43,14 @@ var instance = function (id, io) {
 			gameServer.listen(self.gameSocketAddress, function() {
 				console.log('server bound on %s', self.gameSocketAddress);
 			});
-
+			console.log("teste");
 			self.gameProcess = spawn('./emulator/snes9x' ,[id, 'emulator/Street-Fighter-II-The-World-Warrior-USA.sfc']);
 			self.gameProcess.stdout.on('data', function (data) {
-		  		console.log(id + " :: Emulator :: " + data);
+		  		//console.log(id + " :: Emulator :: " + data);
+			});
+
+			self.gameProcess.stdout.on('error', function (err) {
+				console.log(err);
 			});
 
 			self.browserSocket.emit('startLoop');
@@ -55,7 +64,7 @@ var instance = function (id, io) {
 			self.chunk += dataList[0];
 			return returnList;
 		}
-		
+
 		returnList.push(self.chunk + dataList[0]);
 
 		for (var i = 1; i < dataList.length - 1; i++) {
@@ -76,7 +85,7 @@ var instance = function (id, io) {
 
 		self.gameSocket.on('data', function (data) {
 			var dataStr = data.toString();
-			
+
 			if (self.browserSocket) {
 				self.browserSocket.send(dataStr);
 			} else {
@@ -84,7 +93,7 @@ var instance = function (id, io) {
 			}
 		});
 	}
-	
+
 	io.of('/' + id).on('connection', function (socket) {
 		console.log(id + ' conectado.');
 		self.browserSocket = socket;

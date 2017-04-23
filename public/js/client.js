@@ -1,4 +1,4 @@
-var io = io.connect('http://localhost:'+ port + '/' + id);
+var io = io.connect(document.location.origin + '/' + id);
 var game;
 var settings;
 var GUI;
