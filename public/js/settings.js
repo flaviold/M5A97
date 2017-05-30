@@ -14,8 +14,6 @@ var Settings = function () {
 	this.R = "S";
 
 	this.configureGUI = function (GUI) {
-		GUI.add(this, "Start");
-		GUI.add(this, "Select");
 		GUI.add(this, "Up");
 		GUI.add(this, "Down");
 		GUI.add(this, "Left");

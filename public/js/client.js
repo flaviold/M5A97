@@ -1,4 +1,4 @@
-var io = io.connect('http://localhost:'+ port + '/' + id);
+var io = io.connect(document.location.origin + '/' + id);
 var game;
 var settings;
 var GUI;
@@ -32,7 +32,7 @@ window.onload = function () {
 	GUI = new dat.GUI();
 	settings.configureGUI(GUI);
 
-	game = new Game(settings);
+	game = new Game(settings, io);
 
 	setButtonsEvents();
 
