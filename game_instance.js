@@ -11,6 +11,7 @@ var instance = function (id, io) {
 
 	this.disconnectGame = function () {
 		if (self.gameProcess) {
+			console.log(':: ' + id + ' :: Disconnect');
 			fs.unlink(self.gameSocketAddress);
 			self.gameProcess.kill('SIGHUP');
 			delete self.gameProcess;
@@ -33,6 +34,7 @@ var instance = function (id, io) {
 				self.gameSocket.on('error', function () {
 					self.disconnectGame();
 					console.log(':: ' + id + ' :: Game :: Error');
+					delete self.gameSocket;
 				});
 
 				if (self.browserSocket) {
@@ -78,7 +80,7 @@ var instance = function (id, io) {
 
 	this.connectSockets = function () {
 		self.browserSocket.on('command', function (data) {
-			console.log(':: ' + id + ' :: Browser :: ' + data);
+			// console.log(':: ' + id + ' :: Browser :: ' + data);
 
 			self.gameSocket.write(data);
 		});
